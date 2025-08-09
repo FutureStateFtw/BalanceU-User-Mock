@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -29,7 +29,8 @@ const item: Variants = {
   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } },
 };
 
-const RequestFundsPage: React.FC = () => {
+// Inner component to access search params (can suspend)
+const RequestFundsContent: React.FC = () => {
   // Sample data for recent deposits by others
   const recentDeposits = [
     { id: 1, from: 'Alice', bucket: 'Dining Dollars', amount: 25, date: '07/15/2025' },
@@ -247,6 +248,20 @@ const RequestFundsPage: React.FC = () => {
         </section>
       )}
     </div>
+  );
+};
+
+const RequestFundsPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-b from-sky-600 to-blue-300 text-white p-6 flex items-center justify-center">
+          <div className="animate-pulse text-lg font-medium">Loading request funds...</div>
+        </div>
+      }
+    >
+      <RequestFundsContent />
+    </Suspense>
   );
 };
 

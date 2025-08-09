@@ -1,11 +1,12 @@
-'use client'
+"use client"
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, Suspense } from 'react'
 import Head from 'next/head'
 import { Card, CardContent } from '@/components/ui/card'
 import { X, Wallet, Gift, MessageSquareDot, ArrowDown, ArrowRight, ArrowLeft } from 'lucide-react'
-import BottomMenu from '@/components/BottomMenu'
-import ProfileMenu from '@/components/ProfileMenu'
+import dynamic from 'next/dynamic'
+const ProfileMenu = dynamic(() => import('@/components/ProfileMenu'), { loading: () => null, ssr: false })
+const BottomMenu = dynamic(() => import('@/components/BottomMenu'), { loading: () => null, ssr: false })
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
@@ -138,7 +139,9 @@ export default function BalanceU() {
             <AnimatePresence>
               {showProfileMenu && (
                 <motion.div ref={profileMenuRef} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="absolute top-full right-0 mt-2 z-50">
-                  <ProfileMenu onClose={() => setShowProfileMenu(false)} onChangeTheme={handleChangeTheme} onShowProfile={handleShowProfile} userName={profile.displayName.split(' ')[0]} />
+                  <Suspense fallback={<div className="p-4 text-sm">Loading menu...</div>}>
+                    <ProfileMenu onClose={() => setShowProfileMenu(false)} onChangeTheme={handleChangeTheme} onShowProfile={handleShowProfile} userName={profile.displayName.split(' ')[0]} />
+                  </Suspense>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -257,36 +260,36 @@ export default function BalanceU() {
                     className={`transition-transform ${showTransactions ? 'rotate-180' : 'rotate-0'}`}
                   />
                 </CardContent>
-                <AnimatePresence initial={false}>
-                  {showTransactions && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
-                      className="px-4 pb-3 space-y-2"
-                    >
-                      {transactions.map((tx, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center border-b border-white/20 pb-1 text-base hover:bg-white/10 px-2 py-1 rounded-lg transition cursor-pointer"
-                          onClick={() => handleTransactionClick(tx)}
-                        >
-                          <div>
-                            <div className="font-semibold text-base flex items-center gap-2">
-                              {tx.name}
+                <Suspense fallback={<div className="px-4 pb-3 text-sm text-white/70">Loading transactions…</div>}>
+                  <AnimatePresence initial={false}>
+                    {showTransactions && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="px-4 pb-3 space-y-2"
+                      >
+                        {transactions.map((tx, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center border-b border-white/20 pb-1 text-base hover:bg-white/10 px-2 py-1 rounded-lg transition cursor-pointer"
+                            onClick={() => handleTransactionClick(tx)}
+                          >
+                            <div>
+                              <div className="font-semibold text-base flex items-center gap-2">{tx.name}</div>
+                              <div className="text-sm text-white/60">{tx.datetime}</div>
                             </div>
-                            <div className="text-sm text-white/60">{tx.datetime}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="text-right font-semibold text-base">{tx.amount}</div>
+                              <ArrowRight size={18} className="text-white/60" />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="text-right font-semibold text-base">{tx.amount}</div>
-                            <ArrowRight size={18} className="text-white/60" />
-                          </div>
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Suspense>
               </Card>
             </section>
 
@@ -380,7 +383,9 @@ export default function BalanceU() {
 
             {/* Bottom Menu */}
             <div className="fixed bottom-4 inset-x-0 flex justify-center z-50">
-              <BottomMenu />
+              <Suspense fallback={<div className="px-6 py-3 rounded-full bg-white/20 text-white text-sm">Loading…</div>}>
+                <BottomMenu />
+              </Suspense>
             </div>
           </>
         )}

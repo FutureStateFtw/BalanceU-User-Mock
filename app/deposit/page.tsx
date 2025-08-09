@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -28,7 +28,8 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } }
 };
 
-const DepositPage = () => {
+// Inner component that reads search params (can suspend) and holds interactive logic
+const DepositContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const themeParam = searchParams.get('theme');
@@ -182,6 +183,21 @@ const DepositPage = () => {
         )}
       </AnimatePresence>
     </div>
+  );
+};
+
+// Page component: wraps the param-reading child in Suspense as recommended for hooks that can suspend.
+const DepositPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-b from-gray-600 to-gray-400 text-white flex items-center justify-center">
+          <div className="animate-pulse text-lg font-medium">Loading deposit interface...</div>
+        </div>
+      }
+    >
+      <DepositContent />
+    </Suspense>
   );
 };
 
